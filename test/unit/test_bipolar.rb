@@ -115,7 +115,6 @@ class BipolarTest < Test::Unit::TestCase
         assert @doc.save
 
         assert_equal 'Ryan', Doc.first.image.name
-        assert_equal Image, Doc.first.image.class
       end
 
       context "with an embedded created image" do
@@ -132,12 +131,12 @@ class BipolarTest < Test::Unit::TestCase
 
           d = Doc.first
           assert_equal 'Doug', d.image.name
-          assert_equal 'Ryan', Image.first
+          assert_equal 'Ryan', Image.first.name
         end
 
         should "embed a created object" do
           assert_equal 1, Image.count
-          assert_equal @img.attributes, Doc.first.image.attributes
+          assert_equal @img.attributes.except('_type'), Doc.first.image.attributes.except('_type')
         end
 
         should "destroy an embedded doc" do

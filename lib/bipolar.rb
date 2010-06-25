@@ -1,5 +1,7 @@
 module Bipolar
 
+  module Embedded; end
+
   def self.configure(model)
     model.class_inheritable_accessor :bipolar_associations
     model.bipolar_associations = Set.new
@@ -14,7 +16,8 @@ module Bipolar
           if embedded_#{name}.attributes.nil?
             nil
           else
-            self.class.associated_klass("#{name}").new embedded_#{name}.attributes
+            # self.class.associated_klass("#{name}").new embedded_#{name}.attributes
+             embedded_#{name}
           end
         end
 
@@ -34,7 +37,8 @@ module Bipolar
       class_eval <<-EOF
         def #{name}
           (embedded_#{name} || []).map do |e|
-            self.class.associated_klass("#{name}").new e.attributes
+            #self.class.associated_klass("#{name}").new e.attributes
+             e
           end
         end
         
@@ -56,15 +60,15 @@ module Bipolar
     end
 
     def embedded_klass(name)
-      if !associated_klass(name).const_defined?(:Embedded)
+      if !Bipolar::Embedded.const_defined? associated_klass(name).to_s
         associated_klass(name).class_eval <<-EOF
-          class Embedded < self
+          class Bipolar::Embedded::#{associated_klass(name)} < self
             include MongoMapper::EmbeddedDocument
           end
         EOF
       end
       
-      associated_klass(name).const_get :Embedded
+      Bipolar::Embedded.const_get associated_klass(name).to_s
     end
   end
 
