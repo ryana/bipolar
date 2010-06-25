@@ -11,9 +11,13 @@ module Bipolar
     
       class_eval <<-EOF
         def #{name}
-          self.class.associated_klass("#{name}").new embedded_#{name}.attributes
+          if embedded_#{name}.attributes.nil?
+            nil
+          else
+            self.class.associated_klass("#{name}").new embedded_#{name}.attributes
+          end
         end
-        
+
         def #{name}= val
           if val.nil?
             self.embedded_#{name} = nil
@@ -29,14 +33,14 @@ module Bipolar
     
       class_eval <<-EOF
         def #{name}
-          embedded_#{name}.map do |e|
+          (embedded_#{name} || []).map do |e|
             self.class.associated_klass("#{name}").new e.attributes
           end
         end
         
         def #{name}= val
           if val.nil?
-            self.embedded_#{name} = nil
+            self.embedded_#{name} = []
           else
             self.embedded_#{name} = val.map do |v|          
               self.class.embedded_klass(v.class).new(v.attributes)

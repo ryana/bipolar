@@ -47,16 +47,31 @@ class BipolarTest < Test::Unit::TestCase
       context "with a bunch of images" do
         setup do
           @images = [Image.create!(:name => 'Ryan'), Image.create!(:name => 'Blake')]
+          @doc.images = @images
+          @doc.save!
         end
 
         should "assign multiple documents" do
-          @doc.images = @images
-          @doc.save!
-
           assert_equal @images.map(&:_id), Doc.first.embedded_images.map(&:_id)
           assert_equal @images, Doc.first.images
           assert Doc.first.attributes.include?("embedded_images")
           assert Doc.first.attributes["embedded_images"].is_a? Array
+        end
+
+        should "be able to clear the list with nil" do
+          @doc.images = nil
+          @doc.save!
+
+          @doc.reload
+          assert_equal [], @doc.images
+        end
+
+        should "be able to clear the list with []" do
+          @doc.images = []
+          @doc.save!
+
+          @doc.reload
+          assert_equal [], @doc.images
         end
       end
     end
@@ -110,8 +125,17 @@ class BipolarTest < Test::Unit::TestCase
           @doc.save!
         end
 
-        should "embed a created object" do
+        should "be able to edit embedded document" do
+          d = Doc.first
+          d.image.name = 'Doug'
+          d.save!
 
+          d = Doc.first
+          assert_equal 'Doug', d.image.name
+          assert_equal 'Ryan', Image.first
+        end
+
+        should "embed a created object" do
           assert_equal 1, Image.count
           assert_equal @img.attributes, Doc.first.image.attributes
         end
