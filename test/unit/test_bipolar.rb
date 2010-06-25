@@ -4,6 +4,10 @@ class Doc
   include MongoMapper::Document
 end
 
+class Paper
+  include MongoMapper::Document
+end
+
 class Image
   include MongoMapper::Document
 end
@@ -11,8 +15,7 @@ end
 class BipolarTest < Test::Unit::TestCase
 
   def teardown
-    Doc.all.each &:destroy
-    Image.all.each &:destroy
+    [Paper, Doc, Image].each {|m| m.all.each &:destroy }
   end
 
   should "have Bipolar" do
@@ -32,6 +35,23 @@ class BipolarTest < Test::Unit::TestCase
       setup do
         Doc.embeds_many :images
         @doc = Doc.new
+      end
+
+      should "not conflict with other models" do
+        Paper.plugin Bipolar
+        Paper.embeds_one :image
+
+        @img = Image.create :name => 'Darren'
+
+        Paper.create! :image => @img
+        Doc.create! :images => [@img, @img, @img]
+
+        assert_equal 1, Image.count
+        assert_equal 1, Paper.count
+        assert_equal 1, Doc.count
+        assert_equal @img.name, Paper.first.image.name
+        assert_equal 3, Doc.first.images.size
+        assert_equal @img.name, Doc.first.images.first.name
       end
 
       should "have embedded_images" do
