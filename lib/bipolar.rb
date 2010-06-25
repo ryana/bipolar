@@ -1,4 +1,5 @@
 module Bipolar
+  Version = '0.1.0'
 
   module Embedded; end
 
