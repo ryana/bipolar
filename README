@@ -1,0 +1,30 @@
+= Bipolar
+
+  class Asset
+    include MongoMapper::Document
+    plugin Bipolar
+
+    embeds_many :images  
+  end
+
+  class Image
+    include MongoMapper::Document  
+  end
+
+
+  Image.create! options
+  Image.create! other_options
+
+  Asset.create :images => Image.all
+
+The last line will embed the images inside the asset.  The images will remain as first-class documents,
+and will be untouched.
+
+= License
+
+bipolar is released under the MIT license.
+
+
+= Support
+
+Just email me at ryan@angilly.com with questions, bugs, or patches.
